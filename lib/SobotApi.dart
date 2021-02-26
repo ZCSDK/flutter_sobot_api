@@ -7,10 +7,11 @@ class SobotApi {
   String openSobotHelpMallCenterMethod = 'ZCSobot_Plugin_Open_Help_Mall_Center';
   String closeSobotChatMethod = 'ZCSobot_Plugin_Close_Sobot_Chat';
   String getUnReadMessageMethod = 'ZCSobot_Plugin_Get_Unread_Message';
-  String sendLocationMethod = 'ZCSobot_Plugin_Send_Location';
 
   //交互的通道名称，flutter和native是通过这个标识符进行相互间的通信
-  static const sobotMethodChannel = MethodChannel('ZCSobot_Plugin_Channel');
+  static const sobotMethodChannel = MethodChannel('sobotflutter');
+
+  //await会阻塞流程，等待紧跟着的的Future执行完毕之后，再执行下一条语句
 
   //异步执行调用原生方法，保持页面不卡住，因为调用原生的方法可能没实现会抛出异常，所以trycatch包住
   Future<dynamic> startZhichi(initParams) async {
@@ -19,12 +20,9 @@ class SobotApi {
           结果 type: 1 返回按钮点击
           value: 空字符串
           desc: 文本 执行返回操作
-          结果 type: 5 发送位置信息
-          value: 空字符串
-          desc: 文本 发送位置
           */
       final result =
-          await sobotMethodChannel.invokeMethod(startZhichiMethod, initParams);
+          sobotMethodChannel.invokeMethod(startZhichiMethod, initParams);
       return result;
     } on PlatformException catch (e) {
       //抛出异常
@@ -39,11 +37,8 @@ class SobotApi {
           结果 type: 1 返回按钮点击
           value: 空字符串
           desc: 文本 执行返回操作
-          结果 type: 5 发送位置信息
-          value: 空字符串
-          desc: 文本 发送位置
           */
-      final result = await sobotMethodChannel.invokeMethod(
+      final result = sobotMethodChannel.invokeMethod(
           openSobotHelpCenterMethod, initParams);
       return result;
     } on PlatformException catch (e) {
@@ -59,11 +54,8 @@ class SobotApi {
           结果 type: 1 返回按钮点击
           value: 空字符串
           desc: 文本 执行返回操作
-          结果 type: 5 发送位置信息
-          value: 空字符串
-          desc: 文本 发送位置
           */
-      final result = await sobotMethodChannel.invokeMethod(
+      final result = sobotMethodChannel.invokeMethod(
           openSobotHelpMallCenterMethod, initParams);
       return result;
     } on PlatformException catch (e) {
@@ -72,7 +64,7 @@ class SobotApi {
     }
   }
 
-  Future<dynamic> getUnReadMessage() async {
+  Future<dynamic> getUnReadMessage(partnerid) async {
     try {
       /*
           结果 type: 4 未读消息
@@ -80,8 +72,7 @@ class SobotApi {
           desc: 文本获取未读消息数
           */
       final result =
-          await sobotMethodChannel.invokeMethod(getUnReadMessageMethod);
-
+          sobotMethodChannel.invokeMethod(getUnReadMessageMethod, partnerid);
       return result;
     } on PlatformException catch (e) {
       //抛出异常
@@ -89,17 +80,10 @@ class SobotApi {
     }
   }
 
-  Future<void> closeSobotChat() async {
+  Future<dynamic> closeSobotChat() async {
     try {
-      await sobotMethodChannel.invokeMethod(closeSobotChatMethod);
-    } on PlatformException catch (e) {
-      //抛出异常
-    }
-  }
-
-  Future<void> sendLocation(Map<String, Object> locationInfo) async {
-    try {
-      await sobotMethodChannel.invokeMethod(sendLocationMethod, locationInfo);
+      final result = sobotMethodChannel.invokeMethod(closeSobotChatMethod);
+      return result;
     } on PlatformException catch (e) {
       //抛出异常
     }

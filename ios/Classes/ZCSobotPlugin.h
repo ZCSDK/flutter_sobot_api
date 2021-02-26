@@ -5,7 +5,7 @@
 //  Created by 王磊 on 2021/1/21.
 //
 
-//#import <Flutter/Flutter.h>
+#import <Flutter/Flutter.h>
 @import UIKit;
 @import Flutter;
 
@@ -20,7 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define ZC_SOBOT_ENV_CHECK @"ZCSobot_Plugin_Env_Check"
 // 频道名称
-#define ZC_SOBOT_PLUGIN_CHANNEL @"ZCSobot_Plugin_Channel"
+#define ZC_SOBOT_PLUGIN_CHANNEL @"sobotflutter"
+
+// 频道名称
+#define ZC_SOBOT_PLUGIN_EVENT_CHANNEL @"sobot"
 // 启动聊天
 #define ZC_SOBOT_START_SDK_METHOD @"ZCSobot_Plugin_Start_SDK"
 /*
@@ -42,13 +45,12 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger,ZCPageListener) {
     ZCPageGoBack         = 1,
     ZCPageLinkClick      = 2,
-    ZCPageNewMessage     = 3,
+    ZCPageNewMessage     = 3, // 未读消息数 或离线消息
     ZCPageGetUnRead      = 4,
     ZCPageSendLocation   = 5,
 };
 
-@interface ZCSobotPlugin : FlutterAppDelegate <FlutterPlugin>
-
+@interface ZCSobotPlugin : FlutterAppDelegate <FlutterPlugin ,FlutterStreamHandler>
 
 @end
 

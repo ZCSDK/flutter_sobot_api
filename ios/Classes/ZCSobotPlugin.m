@@ -34,8 +34,13 @@
 #if ZC_SOBOT_APPDELEGATE_SWIFT_FILE
 #import "Runner-Swift.h"
 #endif
+
+
 @interface ZCSobotPlugin()
+
 @property (nonatomic ,strong) NSMutableDictionary *locationInfo;
+
+@property (nonatomic, strong) FlutterEventSink eventSink;
 
 @end
 
@@ -45,6 +50,10 @@
     FlutterMethodChannel *channel = [FlutterMethodChannel methodChannelWithName:ZC_SOBOT_PLUGIN_CHANNEL binaryMessenger:[registrar messenger]];
     ZCSobotPlugin *instance = [[ZCSobotPlugin alloc]init];
     [registrar addMethodCallDelegate:instance channel:channel];
+    
+    FlutterEventChannel *eventChannel = [FlutterEventChannel eventChannelWithName:ZC_SOBOT_PLUGIN_EVENT_CHANNEL binaryMessenger:[registrar messenger]];
+    
+    [eventChannel setStreamHandler:instance];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall *)call result:(FlutterResult)result {
@@ -88,7 +97,7 @@
     
     NSString *api_host = [self convertString:[argus objectForKey:@"api_host"]];
     NSString * app_key = [self convertString:[argus objectForKey:@"app_key"]];
-    
+    NSString *partnerid = [self convertString:[argus objectForKey:@"partnerid"]];
     [ZCSobotApi initSobotSDK:app_key host:api_host result:^(id  _Nonnull object) {
         
         ZCLibInitInfo *info = [self setZCLibInfoValue:argus];
@@ -116,6 +125,8 @@
         }];
         
         [self messageLinkClick:result];
+        
+        [self onReceiveMessage];
     }];
 #endif
 }
@@ -125,7 +136,7 @@
     
     NSString *api_host = [self convertString:[argus objectForKey:@"api_host"]];
     NSString * app_key = [self convertString:[argus objectForKey:@"app_key"]];
-    
+    NSString *partnerid = [self convertString:[argus objectForKey:@"partnerid"]];
     [ZCSobotApi initSobotSDK:app_key host:api_host result:^(id  _Nonnull object) {
         
         ZCLibInitInfo *info = [self setZCLibInfoValue:argus];
@@ -142,8 +153,16 @@
             
             [ZCSobot openZCServiceCentreVC:kitInfo with:from onItemClick:nil];
         });
+        //        [ZCSobotApi ]
+        
+        //        [ZCSobotApi getLastLeaveReplyMessage:partnerid resultBlock:^(NSDictionary * _Nonnull dict, NSMutableArray * _Nonnull arr, int code) {
+        
+        //        }];
     }];
     [self messageLinkClick:result];
+    
+    [self onReceiveMessage];
+    //    receivedBlock
 #endif
 }
 
@@ -151,6 +170,8 @@
 #if ZC_SOBOT_SUPPORTED
     NSString *api_host = [self convertString:[argus objectForKey:@"api_host"]];
     NSString * app_key = [self convertString:[argus objectForKey:@"app_key"]];
+    
+    NSString *partnerid = [self convertString:[argus objectForKey:@"partnerid"]];
     
     [ZCSobotApi initSobotSDK:app_key host:api_host result:^(id  _Nonnull object) {
         
@@ -170,9 +191,9 @@
         });
         
         [self messageLinkClick:result];
+        
+        [self onReceiveMessage];
     }];
-    
-    
 #endif
 }
 - (void)messageLinkClick:(FlutterResult)result {
@@ -237,6 +258,19 @@
     }];
 #endif
 }
+
+- (void)onReceiveMessage {
+#if ZC_SOBOT_SUPPORTED
+    [ZCLibClient getZCLibClient].receivedBlock = ^(id message, int nleft, NSDictionary *object) {
+        
+        NSDictionary *ret = @{@"type":[self convertIntToString:ZCPageNewMessage],@"value":message,@"desc":@"收到离线消息",@"num":@(nleft) };
+        if(self.eventSink){
+            self.eventSink(ret);
+        }
+    };
+#endif
+}
+
 #if ZC_SOBOT_SUPPORTED
 -(ZCLibInitInfo *) setZCLibInfoValue:(NSDictionary *)dict{
     //    dict = [self defaultInitParams];
@@ -645,5 +679,37 @@
     return @"";
 }
 #endif
+
+- (FlutterError * _Nullable)onCancelWithArguments:(id _Nullable)arguments {
+    
+    
+    return nil;
+}
+
+- (FlutterError * _Nullable)onListenWithArguments:(id _Nullable)arguments eventSink:(nonnull FlutterEventSink)events {
+    
+    self.eventSink = events;
+    
+    return nil;
+}
+
+//- (BOOL)hasPlugin:(nonnull NSString *)pluginKey {
+//
+//
+//}
+//
+//- (nullable NSObject<FlutterPluginRegistrar> *)registrarForPlugin:(nonnull NSString *)pluginKey {
+//
+//    return nil;
+//}
+//
+//- (nullable NSObject *)valuePublishedByPlugin:(nonnull NSString *)pluginKey {
+//
+//}
+
+//- (void)addApplicationLifeCycleDelegate:(nonnull NSObject<FlutterApplicationLifeCycleDelegate> *)delegate {
+//
+//
+//}
 
 @end
